@@ -8,11 +8,18 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
-type item struct{
+type item struct {
 	itemID string
 	rating float64
+}
+
+type Apriori struct {
+	OrderDate     time.Time
+	TransactionID int
+	ItemName      string
 }
 
 func ReadDataset(fileName string) map[string]map[string]float64 {
@@ -27,9 +34,9 @@ func ReadDataset(fileName string) map[string]map[string]float64 {
 	lines := strings.Split(string(content), "\n")
 
 	// Create hashTable based on user int and items
-	dataset :=  map[string]map[string]float64{}
+	dataset := map[string]map[string]float64{}
 
-	for i := 0; i < len(lines) - 1;  i++{
+	for i := 0; i < len(lines)-1; i++ {
 		// Get id, itemId & rating from line comma separated
 		line := strings.Split(string(lines[i]), ",")
 
@@ -58,7 +65,7 @@ func ReadMovieDataSet(fileName string) map[string]map[string]float64 {
 	scanner.Split(bufio.ScanLines)
 
 	// Create hashTable based on user int and items
-	dataset :=  map[string]map[string]float64{}
+	dataset := map[string]map[string]float64{}
 
 	// use scanner to detect spaces and new lines.
 	for scanner.Scan() {
@@ -76,5 +83,49 @@ func ReadMovieDataSet(fileName string) map[string]map[string]float64 {
 		dataset[userID][itemID] = itemRating
 	}
 
+	return dataset
+}
+
+func ReadAprioriDataSet(fileName string) map[int]Apriori {
+	// Get file and collect the data from file
+	file, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println("error loading MovieLens file: ", err)
+	}
+
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	// Create hashTable based on user int and items
+	dataset := map[int]Apriori{}
+	integer := 0
+
+	// use scanner to detect spaces and new lines.
+	for scanner.Scan() {
+		// Get id, itemId & rating from line comma separated
+		lines := strings.Split(scanner.Text(), "/n")
+		for i := 0; i < len(lines); i++ {
+			// Get id, itemId & rating from line comma separated
+			line := strings.Split(string(lines[i]), ",")
+
+			transactionID, _ := strconv.Atoi(line[2])
+
+			location, _ := time.LoadLocation("Europe/Amsterdam")
+			str, err := time.Parse("2006-01-02 15:04:05", line[0]+" "+line[1])
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			a := Apriori{str.In(location), transactionID, line[3]}
+
+			// Add new map for the user in the map with itemID(string) and ItemRating(float64)
+			dataset[integer] = a
+			integer++
+		}
+	}
+
+	fmt.Println(dataset[0], dataset[0].TransactionID)
 	return dataset
 }

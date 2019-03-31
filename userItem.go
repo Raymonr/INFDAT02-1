@@ -14,18 +14,18 @@ import (
 // all is commented to explain whats happens
 
 // struct which contains dataset and user id
-type UserItem struct{
-	userID string
+type UserItem struct {
+	userID  string
 	dataset *map[string]map[string]float64
 }
 
 // struct which contains nearest neighbour information
-type nearestNeighbour struct{
-	userID    string
-	data      assets.Data
-	similarity assets.NewUserItemDataSet
-	threshold float64
-	nearest 	*map[string]map[string]float64
+type nearestNeighbour struct {
+	userID         string
+	data           assets.Data
+	similarity     assets.NewUserItemDataSet
+	threshold      float64
+	nearest        *map[string]map[string]float64
 	userRatedItems []string
 }
 
@@ -34,7 +34,7 @@ func (uI *UserItem) euclidean() assets.NewUserItemDataSet {
 	// declare new variables to prevent repeatability and add readability.
 	distanceBetweenUserAndUsers := make(map[string]float64)
 	var UserItemMap = *uI.dataset
-	var userID 			= uI.userID
+	var userID = uI.userID
 
 	// walk true every item from the user
 	for k := range UserItemMap {
@@ -53,7 +53,7 @@ func (uI *UserItem) pearson() assets.NewUserItemDataSet {
 
 	// Declare new variables to prevent repeatability and add readability.
 	var UserItemMap = *uI.dataset
-	var userID 			= uI.userID
+	var userID = uI.userID
 
 	// walk true every item from the user
 	for k := range UserItemMap {
@@ -72,7 +72,7 @@ func (uI *UserItem) cosine() assets.NewUserItemDataSet {
 
 	// declare new variables to prevent repeatability and add readability.
 	var UserItemMap = *uI.dataset
-	var userID 			= uI.userID
+	var userID = uI.userID
 
 	// walk true every item from the user
 	for k := range UserItemMap {
@@ -95,8 +95,8 @@ func (uI *UserItem) findUsersWithMoreUniqueRatings() (assets.Data, []string) {
 	var userRatedItems []string
 
 	// new dataset which contains the unique ratings off other users.
-	sameRatingsAsUser :=  map[string]map[string]float64{}
-	datasetWithUniqueRatings :=  map[string]map[string]float64{}
+	sameRatingsAsUser := map[string]map[string]float64{}
+	datasetWithUniqueRatings := map[string]map[string]float64{}
 
 	// loop over all the userRatings
 	for otherUserID, otherRatings := range userData {
@@ -120,7 +120,7 @@ func (uI *UserItem) findUsersWithMoreUniqueRatings() (assets.Data, []string) {
 					}
 				}
 			}
-		}else{
+		} else {
 			for key := range otherRatings {
 
 				userRatedItems = append(userRatedItems, key)
@@ -128,25 +128,25 @@ func (uI *UserItem) findUsersWithMoreUniqueRatings() (assets.Data, []string) {
 		}
 	}
 
-	userItemDataset := assets.Data{ EqualUserItemRatings: &sameRatingsAsUser, UniqueUserItemRatings: &datasetWithUniqueRatings, AllUserItemRatings: uI.dataset}
+	userItemDataset := assets.Data{EqualUserItemRatings: &sameRatingsAsUser, UniqueUserItemRatings: &datasetWithUniqueRatings, AllUserItemRatings: uI.dataset}
 	return userItemDataset, userRatedItems
 }
 
 // neighbours method to calculate nearestNeighbours
-func (neighbours *nearestNeighbour) calculate(){
+func (neighbours *nearestNeighbour) calculate() {
 	//todo create algorithm to decide the unique items needed (Mean) for better results
 	//todo check if user item has been rated multiple times by other users
 	//todo check items user compaired with other users\
 	//variables
 	sim := neighbours.similarity.Dataset
 	uniqueUserItems := *neighbours.data.UniqueUserItemRatings
-	totalNeighbours:= 3
+	totalNeighbours := 3
 	sortedMap := sortedmap.New(totalNeighbours, asc.Float64)
 	var nearestNeighbours map[string]float64
 	nearestNeighbours = map[string]float64{}
 
 	// walk true every similarity in the dataset
-	for key, value := range sim{
+	for key, value := range sim {
 		// only adds user when similarity is higher then the threshold
 		if value > neighbours.threshold {
 			// only adds user if it has more than 1 unique item rated
@@ -156,7 +156,7 @@ func (neighbours *nearestNeighbour) calculate(){
 			}
 		}
 		// break after finding totalNeighbours
-		if len(nearestNeighbours) == totalNeighbours{
+		if len(nearestNeighbours) == totalNeighbours {
 			break
 		}
 	}
@@ -180,9 +180,9 @@ func (neighbours *nearestNeighbour) calculate(){
 }
 
 // neighbours method to predict 'item rating' based on nearest neighbours
-func (neighbours *nearestNeighbour) predictUniqueItemRatings()  {
+func (neighbours *nearestNeighbour) predictUniqueItemRatings() {
 	//variables
-	ItemsPearsonRanked :=  map[string]float64{}
+	ItemsPearsonRanked := map[string]float64{}
 	listTimesOfAllItems := map[string]float64{}
 	dataset := *neighbours.nearest
 
@@ -199,13 +199,12 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings()  {
 	sortedMap := sortedmap.New(len(ItemsPearsonRanked), asc.Float64)
 
 	// divide the sum of the item similarity to predict the users items rating
-	for key := range ItemsPearsonRanked  {
+	for key := range ItemsPearsonRanked {
 		totalRating := ItemsPearsonRanked[key]
 		timesRated := listTimesOfAllItems[key]
 		ItemsPearsonRanked[key] = totalRating / timesRated
-		sortedMap.Insert(key, totalRating / timesRated)
+		sortedMap.Insert(key, totalRating/timesRated)
 	}
-
 
 	iterCh, err := sortedMap.BoundedIterCh(true, 0.0, 10.0)
 	if err != nil {
@@ -225,12 +224,11 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings()  {
 		// needed for result printing reasons
 		value := fmt.Sprintf("%.2f", ItemsPearsonRanked[key])
 		fmt.Println(integer + " : Item: " + key + " Rating: " + value + ", ")
-		if i == 10{
+		if i == 10 {
 			break
 		}
 	}
 }
-
 
 func main() {
 	//variables
@@ -256,17 +254,17 @@ func main() {
 	list = append(list, cosineResult)
 
 	// print result off the algorithms
-	assets.PrintMultipleAlgorithms(list,"The distance from user " + userID + " compared with the other users:")
+	assets.PrintMultipleAlgorithms(list, "The distance from user "+userID+" compared with the other users:")
 
 	// PART 3
 	// find similar and unique ratings
 	equalAndUniqueUserItemRatings, userRatedItems := userSeven.findUsersWithMoreUniqueRatings()
 	// print result off the dataset with the same and different ratings.
-	assets.PrintsSimilarAndDifferentItems(equalAndUniqueUserItemRatings, "See the same and unique ratings for each user compared with user " + userID + ".")
+	assets.PrintsSimilarAndDifferentItems(equalAndUniqueUserItemRatings, "See the same and unique ratings for each user compared with user "+userID+".")
 
 	// Part 4
 	// Nearest Neighbour
-	nearestNeighbour := nearestNeighbour{userID, equalAndUniqueUserItemRatings, pearsonResult,threshold, nearestNeighbour{}.nearest, userRatedItems}
+	nearestNeighbour := nearestNeighbour{userID, equalAndUniqueUserItemRatings, pearsonResult, threshold, nearestNeighbour{}.nearest, userRatedItems}
 	nearestNeighbour.calculate()
 
 	// Part 5

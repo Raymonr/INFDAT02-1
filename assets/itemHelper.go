@@ -1,0 +1,5 @@
+package assets
+
+func main() {
+
+}
