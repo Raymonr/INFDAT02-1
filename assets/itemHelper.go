@@ -107,23 +107,6 @@ func PrintVertexTable(dataset []algorithms.Vertex, itemIDs []string) {
 			resultFromUser = append(resultFromUser, fmt.Sprintf("%.4f", cosine)+" ("+total+")")
 		}
 
-		//resultFromUser = append(resultFromUser, key)
-		//
-		//// needed to add average off user
-		//for key2, value2 := range *average {
-		//	if key == key2 {
-		//		resultFromUser = append(resultFromUser, fmt.Sprintf("%.2f", value2))
-		//	}
-		//}
-		//for i:= 0; i < len(itemIDs); i++ {
-		//	temp := itemIDs[i]
-		//	if val, ok := value[temp]; ok {
-		//		resultFromUser = append(resultFromUser, fmt.Sprintf("%.2f", val))
-		//	}else{
-		//		resultFromUser =  append(resultFromUser, "-")
-		//	}
-		//}
-		//
 		tableData = append(tableData, resultFromUser)
 	}
 
