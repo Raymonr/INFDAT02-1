@@ -134,7 +134,7 @@ func (pearson Pearson) Calculate(user map[string]float64, otherUser map[string]f
 	return upper / under
 }
 
-// Pearson
+// Cosine
 type Cosine struct {
 }
 
