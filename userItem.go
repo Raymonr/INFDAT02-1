@@ -35,6 +35,52 @@ type userItem struct {
 	algorithmName string
 }
 
+// UserItem method to find unique and same ratings as user
+func (uI *userItem) findUsersWithMoreUniqueRatings() (assets.Data, []string) {
+	// variables for readability
+	userID := uI.userID
+	userData := *uI.dataset
+	userRatings := userData[userID]
+	var userRatedItems []string
+
+	// new dataset which contains the unique ratings off other users.
+	sameRatingsAsUser := map[string]map[string]float64{}
+	datasetWithUniqueRatings := map[string]map[string]float64{}
+
+	// loop over all the userRatings
+	for otherUserID, otherRatings := range userData {
+		// Skip if the id is the same as user
+		if otherUserID != userID {
+			// check if the other user has minimal one rating similar as user:
+			if assets.Contains(userRatings, otherRatings) {
+				// when user doesn't exist in the datasetWithUniqueRatings add user
+				if datasetWithUniqueRatings[otherUserID] == nil {
+					datasetWithUniqueRatings[otherUserID] = map[string]float64{}
+					sameRatingsAsUser[otherUserID] = map[string]float64{}
+				}
+
+				// loop over all the ratings to find unique ratings to add tot the new dataset
+				for key, value := range otherRatings {
+					if _, ok := userRatings[key]; ok {
+						sameRatingsAsUser[otherUserID][key] = value
+					} else {
+						//add key and value to new list
+						datasetWithUniqueRatings[otherUserID][key] = value
+					}
+				}
+			}
+		} else {
+			for key := range otherRatings {
+
+				userRatedItems = append(userRatedItems, key)
+			}
+		}
+	}
+
+	userItemDataset := assets.Data{EqualUserItemRatings: &sameRatingsAsUser, UniqueUserItemRatings: &datasetWithUniqueRatings, AllUserItemRatings: uI.dataset}
+	return userItemDataset, userRatedItems
+}
+
 // Euclidean
 type Euclidean struct {
 }
@@ -112,11 +158,27 @@ func (cosine Cosine) Calculate(user map[string]float64, otherUser map[string]flo
 }
 
 // Calculate interface executed for every method in StrategyPattern
-func (uI *userItem) Calculate() assets.NewUserItemDataSet {
+func (uI *userItem) Calculate() (newDataset assets.NewUserItemDataSet, err error) {
 	uI.userID = "7"
-	tempDataset := assets.ReadDataset("files/user-item.txt")
-	//tempDataset := assets.ReadMovieDataSet("files/movieLens100KUserItems.data")
+	tempDataset, err := assets.ReadDataset("files/user-item.txt")
+	//tempDataset, err := assets.ReadMovieDataSet("files/movieLens100KUserItems.data")
+	if err != nil {
+		return assets.NewUserItemDataSet{}, fmt.Errorf("Database is nog leeg er kan geen recomendatie gedaan worden.")
+	}
 	uI.dataset = &tempDataset
+
+	//cold start
+	var exist bool
+	for key, value := range tempDataset {
+		if key == uI.userID {
+			if len(value) >= 2 {
+				exist = true
+			}
+		}
+	}
+	if !exist {
+		return assets.NewUserItemDataSet{}, fmt.Errorf("Neem mee in de volgende iteratie, user heeft minimaal 2 ratings nodig")
+	}
 
 	distanceBetweenUserAndUsers := make(map[string]float64)
 
@@ -131,7 +193,7 @@ func (uI *userItem) Calculate() assets.NewUserItemDataSet {
 			distanceBetweenUserAndUsers[k] = distanceBetweenUsers
 		}
 	}
-	return assets.NewUserItemDataSet{UserID: uI.userID, Dataset: distanceBetweenUserAndUsers, AlgorithmName: uI.algorithmName}
+	return assets.NewUserItemDataSet{UserID: uI.userID, Dataset: distanceBetweenUserAndUsers, AlgorithmName: uI.algorithmName}, nil
 }
 
 //
@@ -229,56 +291,40 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings() {
 		// needed for result printing reasons
 		value := fmt.Sprintf("%.2f", ItemsPearsonRanked[key])
 		fmt.Println(integer + " : Item: " + key + " Rating: " + value)
-		if i == 20 {
-			break
-		}
-	}
-}
-
-// UserItem method to find unique and same ratings as user
-func (uI *userItem) findUsersWithMoreUniqueRatings() (assets.Data, []string) {
-	// variables for readability
-	userID := uI.userID
-	userData := *uI.dataset
-	userRatings := userData[userID]
-	var userRatedItems []string
-
-	// new dataset which contains the unique ratings off other users.
-	sameRatingsAsUser := map[string]map[string]float64{}
-	datasetWithUniqueRatings := map[string]map[string]float64{}
-
-	// loop over all the userRatings
-	for otherUserID, otherRatings := range userData {
-		// Skip if the id is the same as user
-		if otherUserID != userID {
-			// check if the other user has minimal one rating similar as user:
-			if assets.Contains(userRatings, otherRatings) {
-				// when user doesn't exist in the datasetWithUniqueRatings add user
-				if datasetWithUniqueRatings[otherUserID] == nil {
-					datasetWithUniqueRatings[otherUserID] = map[string]float64{}
-					sameRatingsAsUser[otherUserID] = map[string]float64{}
-				}
-
-				// loop over all the ratings to find unique ratings to add tot the new dataset
-				for key, value := range otherRatings {
-					if _, ok := userRatings[key]; ok {
-						sameRatingsAsUser[otherUserID][key] = value
+		if i == len(listTimesOfAllItems) || i == 20 {
+			integer2 := strconv.Itoa(i + 1)
+			var tempBool bool
+			var key4 string
+			var value4 float64
+			for _, value := range *neighbours.data.UniqueUserItemRatings {
+				for key3, val := range value {
+					key4 = key3
+					value4 = val
+					for key2 := range listTimesOfAllItems {
+						if key3 == key2 {
+							tempBool = true
+						}
+					}
+					// Break when there is a unique item
+					if !tempBool {
+						break
 					} else {
-						//add key and value to new list
-						datasetWithUniqueRatings[otherUserID][key] = value
+						tempBool = false
+					}
+					// When the last item is visited return true to prevent showing extra item
+					if len(value) == i {
+						tempBool = true
 					}
 				}
 			}
-		} else {
-			for key := range otherRatings {
-
-				userRatedItems = append(userRatedItems, key)
+			if !tempBool {
+				// returns a random item that is unique but not rated.
+				fmt.Println("\nRandom unique item:")
+				fmt.Println(integer2 + " : Item: " + key4 + " Rating: " + fmt.Sprintf("%.2f", value4))
 			}
+			break
 		}
 	}
-
-	userItemDataset := assets.Data{EqualUserItemRatings: &sameRatingsAsUser, UniqueUserItemRatings: &datasetWithUniqueRatings, AllUserItemRatings: uI.dataset}
-	return userItemDataset, userRatedItems
 }
 
 func main() {
@@ -292,29 +338,34 @@ func main() {
 	cosine := userItem{calculate: Cosine{}, algorithmName: "Cosine"}
 
 	// calculate algorithms
-	euclideanResult := euclidean.Calculate()
-	pearsonResult := pearson.Calculate()
-	cosineResult := cosine.Calculate()
+	euclideanResult, err := euclidean.Calculate()
+	pearsonResult, err := pearson.Calculate()
+	cosineResult, err := cosine.Calculate()
 
-	// create a list off all the results
-	list = append(list, pearsonResult, euclideanResult, cosineResult)
+	// check if there are errors in the dataset
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		// create a list off all the results
+		list = append(list, pearsonResult, euclideanResult, cosineResult)
 
-	// print result off the algorithms
-	assets.PrintMultipleAlgorithms(list, "The distance from user "+pearson.userID+" compared with the other users:")
+		// print result off the algorithms
+		assets.PrintMultipleAlgorithms(list, "The distance from user "+pearson.userID+" compared with the other users:")
 
-	// PART 3
-	// find similar and unique ratings
-	userSeven := userItem{pearson.userID, pearson.dataset, Pearson{}, "pearson"}
-	equalAndUniqueUserItemRatings, userRatedItems := userSeven.findUsersWithMoreUniqueRatings()
-	// print result off the dataset with the same and different ratings.
-	assets.PrintsSimilarAndDifferentItems(equalAndUniqueUserItemRatings, "See the same and unique ratings for each user compared with user "+pearson.userID+":")
+		// PART 3
+		// find similar and unique ratings
+		userSeven := userItem{pearson.userID, pearson.dataset, Pearson{}, "pearson"}
+		equalAndUniqueUserItemRatings, userRatedItems := userSeven.findUsersWithMoreUniqueRatings()
+		// print result off the dataset with the same and different ratings.
+		assets.PrintsSimilarAndDifferentItems(equalAndUniqueUserItemRatings, "See the same and unique ratings for each user compared with user "+pearson.userID+":")
 
-	// Part 4
-	// Nearest Neighbour
-	nearestNeighbour := nearestNeighbour{pearson.userID, equalAndUniqueUserItemRatings, pearsonResult, threshold, nearestNeighbour{}.nearest, userRatedItems}
-	nearestNeighbour.calculate()
+		// Part 4
+		// Nearest Neighbour
+		nearestNeighbour := nearestNeighbour{pearson.userID, equalAndUniqueUserItemRatings, pearsonResult, threshold, nearestNeighbour{}.nearest, userRatedItems}
+		nearestNeighbour.calculate()
 
-	// Part 5
-	nearestNeighbour.predictUniqueItemRatings()
-	fmt.Println("End result")
+		// Part 5
+		nearestNeighbour.predictUniqueItemRatings()
+		fmt.Println("\nEind resultaat")
+	}
 }

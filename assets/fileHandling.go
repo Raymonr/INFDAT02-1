@@ -17,7 +17,7 @@ type Apriori struct {
 	ItemName      string
 }
 
-func ReadDataset(fileName string) map[string]map[string]float64 {
+func ReadDataset(fileName string) (dataset map[string]map[string]float64, err error) {
 	// Get file and collect the data from file
 	content, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -27,9 +27,11 @@ func ReadDataset(fileName string) map[string]map[string]float64 {
 
 	// Split all content in lines by new line
 	lines := strings.Split(string(content), "\n")
-
+	if len(lines) == 1 {
+		return dataset, fmt.Errorf("Database is nog leeg er kan geen recomendatie gedaan worden.")
+	}
 	// Create hashTable based on user int and items
-	dataset := map[string]map[string]float64{}
+	dataset = map[string]map[string]float64{}
 
 	for i := 0; i < len(lines)-1; i++ {
 		// Get id, itemId & rating from line comma separated
@@ -45,10 +47,10 @@ func ReadDataset(fileName string) map[string]map[string]float64 {
 		}
 		dataset[userID][itemID] = itemRating
 	}
-	return dataset
+	return dataset, nil
 }
 
-func ReadMovieDataSet(fileName string) map[string]map[string]float64 {
+func ReadMovieDataSet(fileName string) (dataset map[string]map[string]float64, err error) {
 	// Get file and collect the data from file
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -59,8 +61,12 @@ func ReadMovieDataSet(fileName string) map[string]map[string]float64 {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
+	if len(scanner.Text()) == 1 {
+		return dataset, fmt.Errorf("Database is nog leeg er kan geen recomendatie gedaan worden.")
+	}
+
 	// Create hashTable based on user int and items
-	dataset := map[string]map[string]float64{}
+	dataset = map[string]map[string]float64{}
 
 	// use scanner to detect spaces and new lines.
 	for scanner.Scan() {
@@ -78,7 +84,7 @@ func ReadMovieDataSet(fileName string) map[string]map[string]float64 {
 		dataset[userID][itemID] = itemRating
 	}
 
-	return dataset
+	return dataset, nil
 }
 
 func ReadAprioriDataSet(fileName string) map[int]Apriori {
