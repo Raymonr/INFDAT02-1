@@ -11,11 +11,6 @@ import (
 	"time"
 )
 
-type item struct {
-	itemID string
-	rating float64
-}
-
 type Apriori struct {
 	OrderDate     time.Time
 	TransactionID int

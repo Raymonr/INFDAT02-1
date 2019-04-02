@@ -4,10 +4,10 @@ import (
 	"math"
 )
 
-func Pearson(user map[string]float64, otherUser map[string]float64) (distance float64){
+func Pearson(user map[string]float64, otherUser map[string]float64) (distance float64) {
 	// Calculates the distance between the same items and adds similarity to see the difference in total ratings
 	var A, B1, B2, C1, C2, D1, D2 float64
-	lengthItems := float64(len(user))
+	lengthItems := 0.0
 
 	// go true every item of the user
 	for k := range user {
@@ -21,13 +21,13 @@ func Pearson(user map[string]float64, otherUser map[string]float64) (distance fl
 
 			C1 += math.Pow(user[k], 2)
 			D1 += math.Pow(otherUserRating, 2)
+			lengthItems++
 		}
 	}
 
 	upper := A - ((B1 * B2) / lengthItems)
 	C2 = math.Pow(B1, 2) / lengthItems
 	D2 = math.Pow(B2, 2) / lengthItems
-	under := math.Sqrt(C1 - C2) * math.Sqrt(D1 - D2)
-
+	under := math.Sqrt(C1-C2) * math.Sqrt(D1-D2)
 	return upper / under
 }

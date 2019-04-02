@@ -29,6 +29,10 @@ type nearestNeighbour struct {
 	userRatedItems []string
 }
 
+type strategyPattern interface {
+	calculate()
+}
+
 // UserItem method for the euclidean algorithm with a reference to the heap
 func (uI *UserItem) euclidean() assets.NewUserItemDataSet {
 	// declare new variables to prevent repeatability and add readability.
@@ -136,7 +140,7 @@ func (uI *UserItem) findUsersWithMoreUniqueRatings() (assets.Data, []string) {
 func (neighbours *nearestNeighbour) calculate() {
 	//todo create algorithm to decide the unique items needed (Mean) for better results
 	//todo check if user item has been rated multiple times by other users
-	//todo check items user compaired with other users\
+	//todo upgrade threshold if list is full
 	//variables
 	sim := neighbours.similarity.Dataset
 	uniqueUserItems := *neighbours.data.UniqueUserItemRatings
@@ -192,7 +196,7 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings() {
 			// add items to the list to create a specific search later
 			predictedRatingForItem := value * algorithmDistance
 			ItemsPearsonRanked[key] += predictedRatingForItem
-			listTimesOfAllItems[key] += 1.0
+			listTimesOfAllItems[key] += algorithmDistance
 		}
 	}
 
@@ -235,7 +239,7 @@ func main() {
 	userID := "7"
 	threshold := 0.8
 	var list []assets.NewUserItemDataSet
-	userRatings := assets.ReadDataset("files/item-item.txt")
+	userRatings := assets.ReadDataset("files/user-item.txt")
 	//todo uncomment if you wanna read the MovieDataSet
 	//userRatings := assets.ReadMovieDataSet("files/movieLens100KUserItems.data")
 
@@ -264,11 +268,9 @@ func main() {
 
 	// Part 4
 	// Nearest Neighbour
-	nearestNeighbour := nearestNeighbour{userID, equalAndUniqueUserItemRatings, pearsonResult, threshold, nearestNeighbour{}.nearest, userRatedItems}
+	nearestNeighbour := nearestNeighbour{userID, equalAndUniqueUserItemRatings, cosineResult, threshold, nearestNeighbour{}.nearest, userRatedItems}
 	nearestNeighbour.calculate()
 
 	// Part 5
 	nearestNeighbour.predictUniqueItemRatings()
-
-	//todo extra create flexible threshold
 }
