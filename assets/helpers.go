@@ -7,7 +7,6 @@ import (
 	"strconv"
 )
 
-
 type NewUserItemDataSet struct {
 	UserID        string
 	Dataset       map[string]float64
@@ -25,16 +24,16 @@ func PrintMultipleAlgorithms(allAlgorithms []NewUserItemDataSet, description str
 	user, _ := strconv.Atoi(allAlgorithms[0].UserID)
 
 	var tableData [][]string
-	var tableHeaders[]string
+	var tableHeaders []string
 	tableHeaders = append(tableHeaders, "Users")
 
-	for i := 1; i < totalUsers + 1; i++ {
-		var resultFromUser[]string
-		resultFromUser =  append(resultFromUser, strconv.Itoa(i))
+	for i := 1; i < totalUsers+1; i++ {
+		var resultFromUser []string
+		resultFromUser = append(resultFromUser, strconv.Itoa(i))
 		if i == user {
 			totalUsers += 1
-			fmt.Println("user "+strconv.Itoa(i)+":  -")
-			resultFromUser =  append(resultFromUser, "-")
+			fmt.Println("user " + strconv.Itoa(i) + ":  -")
+			resultFromUser = append(resultFromUser, "-")
 		} else {
 			// return the result out of the dataset convert it to a string and add it to the array of strings in resultFromUser
 			for iteration, allAlgorithmResult2 := range allAlgorithms {
@@ -47,18 +46,21 @@ func PrintMultipleAlgorithms(allAlgorithms []NewUserItemDataSet, description str
 
 			tableData = append(tableData, resultFromUser)
 		}
+		if i == 10 {
+			break
+		}
 	}
 
 	// create Ascii table
 	fmt.Println(description)
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(tableHeaders)				// set the headers for the table
+	table.SetHeader(tableHeaders) // set the headers for the table
 	table.SetBorder(true)
-	table.AppendBulk(tableData)					// Append the user data to the table
+	table.AppendBulk(tableData) // Append the user data to the table
 	table.Render()
 }
 
-func PrintsSimilarAndDifferentItems(data Data, description string){
+func PrintsSimilarAndDifferentItems(data Data, description string) {
 	// variables
 	var tableData [][]string
 	tableHeaders := []string{"Users", "Same ratings", "Unique ratings"}
@@ -66,41 +68,43 @@ func PrintsSimilarAndDifferentItems(data Data, description string){
 	totalUsers := len(equalRatings)
 	uniqueRatings := *data.UniqueUserItemRatings
 
-	for i := 1; i < totalUsers + 1; i++ {
+	for i := 1; i < totalUsers+1; i++ {
 		// variables
 		var stringSameRatings string
 		var stringUniqueRatings string
 		userID := strconv.Itoa(i)
 
-		//
-		var resultFromUser[]string
-		resultFromUser =  append(resultFromUser, strconv.Itoa(i))
+		var resultFromUser []string
+		resultFromUser = append(resultFromUser, strconv.Itoa(i))
 
 		// add all same user ratings to the string
 		for key, value := range equalRatings[userID] {
 			tempString := fmt.Sprintf("%v", value)
-			stringSameRatings += "(" + key + ":" + tempString +") "
+			stringSameRatings += "(" + key + ":" + tempString + ") "
 		}
 
 		// add all unique user ratings to the string
 		for key, value := range uniqueRatings[userID] {
 			tempString := fmt.Sprintf("%v", value)
-			stringUniqueRatings += "(" + key + ":" + tempString +") "
+			stringUniqueRatings += "(" + key + ":" + tempString + ") "
 		}
 
 		// add  string results from user to table string
-		resultFromUser =  append(resultFromUser, stringSameRatings)
-		resultFromUser =  append(resultFromUser, stringUniqueRatings)
+		resultFromUser = append(resultFromUser, stringSameRatings)
+		resultFromUser = append(resultFromUser, stringUniqueRatings)
 		tableData = append(tableData, resultFromUser)
+		if i == 6 {
+			break
+		}
 	}
 
 	// print the description
 	fmt.Println("\n" + description)
 	// create Ascii table
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(tableHeaders)				// set the headers for the table
+	table.SetHeader(tableHeaders) // set the headers for the table
 	table.SetBorder(true)
-	table.AppendBulk(tableData)					// Append the user data to the table
+	table.AppendBulk(tableData) // Append the user data to the table
 	table.Render()
 }
 

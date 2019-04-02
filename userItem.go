@@ -115,6 +115,7 @@ func (cosine Cosine) Calculate(user map[string]float64, otherUser map[string]flo
 func (uI *userItem) Calculate() assets.NewUserItemDataSet {
 	uI.userID = "7"
 	tempDataset := assets.ReadDataset("files/user-item.txt")
+	//tempDataset := assets.ReadMovieDataSet("files/movieLens100KUserItems.data")
 	uI.dataset = &tempDataset
 
 	distanceBetweenUserAndUsers := make(map[string]float64)
@@ -140,7 +141,6 @@ func (uI *userItem) Calculate() assets.NewUserItemDataSet {
 // neighbours method to calculate nearestNeighbours
 func (neighbours *nearestNeighbour) calculate() {
 	//todo create algorithm to decide the unique items needed (Mean) for better results
-	//todo check if user item has been rated multiple times by other users
 	//todo upgrade threshold if list is full
 	//variables
 	sim := neighbours.similarity.Dataset
@@ -228,8 +228,8 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings() {
 
 		// needed for result printing reasons
 		value := fmt.Sprintf("%.2f", ItemsPearsonRanked[key])
-		fmt.Println(integer + " : Item: " + key + " Rating: " + value + ", ")
-		if i == 10 {
+		fmt.Println(integer + " : Item: " + key + " Rating: " + value)
+		if i == 20 {
 			break
 		}
 	}
@@ -307,7 +307,7 @@ func main() {
 	userSeven := userItem{pearson.userID, pearson.dataset, Pearson{}, "pearson"}
 	equalAndUniqueUserItemRatings, userRatedItems := userSeven.findUsersWithMoreUniqueRatings()
 	// print result off the dataset with the same and different ratings.
-	assets.PrintsSimilarAndDifferentItems(equalAndUniqueUserItemRatings, "See the same and unique ratings for each user compared with user "+pearson.userID+".")
+	assets.PrintsSimilarAndDifferentItems(equalAndUniqueUserItemRatings, "See the same and unique ratings for each user compared with user "+pearson.userID+":")
 
 	// Part 4
 	// Nearest Neighbour
@@ -316,4 +316,5 @@ func main() {
 
 	// Part 5
 	nearestNeighbour.predictUniqueItemRatings()
+	fmt.Println("End result")
 }
