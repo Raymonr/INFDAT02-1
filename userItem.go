@@ -12,12 +12,13 @@ import (
 
 // struct which contains nearest neighbour information
 type nearestNeighbour struct {
-	userID         string
-	data           assets.Data
-	similarity     assets.NewUserItemDataSet
-	threshold      float64
-	nearest        *map[string]map[string]float64
-	userRatedItems []string
+	userID          string
+	data            assets.Data
+	similarity      assets.NewUserItemDataSet
+	threshold       float64
+	nearest         *map[string]map[string]float64
+	userRatedItems  []string
+	itemInformation map[string]string
 }
 
 //
@@ -242,6 +243,8 @@ func (neighbours *nearestNeighbour) calculate() {
 		neighboursList[key] = temp[key]
 	}
 
+	neighbours.itemInformation = assets.ReadItemInformation("files/u.item")
+
 	// set nearestNeighbours
 	neighbours.nearest = &neighboursList
 }
@@ -290,12 +293,15 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings() {
 
 		// needed for result printing reasons
 		value := fmt.Sprintf("%.2f", ItemsPearsonRanked[key])
-		fmt.Println(integer + " : Item: " + key + " Rating: " + value)
+		itemTitle := neighbours.itemInformation[key]
+		fmt.Println(integer + " : Item " + key + " title: " + itemTitle + " Rating: " + value)
 		if i == len(listTimesOfAllItems) || i == 20 {
 			integer2 := strconv.Itoa(i + 1)
 			var tempBool bool
 			var key4 string
 			var value4 float64
+
+			// add random suggestion
 			for _, value := range *neighbours.data.UniqueUserItemRatings {
 				for key3, val := range value {
 					key4 = key3
@@ -317,10 +323,12 @@ func (neighbours *nearestNeighbour) predictUniqueItemRatings() {
 					}
 				}
 			}
+
 			if !tempBool {
 				// returns a random item that is unique but not rated.
 				fmt.Println("\nRandom unique item:")
-				fmt.Println(integer2 + " : Item: " + key4 + " Rating: " + fmt.Sprintf("%.2f", value4))
+				itemTitle = neighbours.itemInformation[key4]
+				fmt.Println(integer2 + " : Item " + key4 + " title: " + itemTitle + " Rating: " + fmt.Sprintf("%.2f", value4))
 			}
 			break
 		}
@@ -361,7 +369,7 @@ func main() {
 
 		// Part 4
 		// Nearest Neighbour
-		nearestNeighbour := nearestNeighbour{pearson.userID, equalAndUniqueUserItemRatings, pearsonResult, threshold, nearestNeighbour{}.nearest, userRatedItems}
+		nearestNeighbour := nearestNeighbour{pearson.userID, equalAndUniqueUserItemRatings, pearsonResult, threshold, nearestNeighbour{}.nearest, userRatedItems, map[string]string{}}
 		nearestNeighbour.calculate()
 
 		// Part 5

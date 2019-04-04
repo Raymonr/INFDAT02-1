@@ -87,6 +87,7 @@ func ReadMovieDataSet(fileName string) (dataset map[string]map[string]float64, e
 	return dataset, nil
 }
 
+// needed to convert the Apriori dataset to the right dataset format.
 func ReadAprioriDataSet(fileName string) map[int]Apriori {
 	// Get file and collect the data from file
 	file, err := os.Open(fileName)
@@ -128,5 +129,39 @@ func ReadAprioriDataSet(fileName string) map[int]Apriori {
 	}
 
 	fmt.Println(dataset[0], dataset[0].TransactionID)
+	return dataset
+}
+
+func ReadItemInformation(fileName string) map[string]string {
+	// Get file and collect the data from file
+	file, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println("error loading item data file: ", err)
+	}
+
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	// Create hashTable based on user int and items
+	dataset := map[string]string{}
+	//integer := 0
+
+	// use scanner to detect spaces and new lines.
+	for scanner.Scan() {
+		// Get id, itemId & rating from line comma separated
+		lines := strings.Split(scanner.Text(), "/n")
+		//for i := 0; i < len(lines); i++ {
+		for _, value := range lines {
+			// Get id, itemId & rating from line comma separated
+			line := strings.Split(string(value), "|")
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			dataset[line[0]] = line[1]
+		}
+	}
+
 	return dataset
 }

@@ -1,7 +1,6 @@
 package assets
 
 import (
-	"fmt"
 	"github.com/cydev/zero"
 	"time"
 )
@@ -172,7 +171,6 @@ func CountTransactionsFromPairs(frequentPairs *FrequentPairs, products map[int]T
 	}
 
 	for key, value := range *frequentPairs {
-		fmt.Print("key", value)
 		temp := *frequentPairs
 		if temp[key].count >= threshold {
 			newFrequentPairs = append(newFrequentPairs, value)
@@ -253,7 +251,6 @@ func CountTransactionsFromThreePairs(frequentPairs FrequentThreePairs, products 
 	}
 
 	for key, value := range frequentPairs {
-		fmt.Print("key", value)
 		temp := frequentPairs
 		if temp[key].count >= threshold {
 			newFrequentPairs = append(newFrequentPairs, value)

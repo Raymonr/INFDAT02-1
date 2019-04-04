@@ -6,6 +6,7 @@ import (
 	"hro.projects/INFDAT01-2NEW/algorithms"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 )
 
@@ -84,8 +85,6 @@ func getFieldInteger(e algorithms.Vertex, field string) int {
 }
 
 func PrintVertexTable(dataset []algorithms.Vertex, itemIDs []string) {
-	fmt.Println("deze data", dataset)
-
 	// variables
 	var tableData [][]string
 	tableHeaders := []string{"item"}
@@ -96,20 +95,19 @@ func PrintVertexTable(dataset []algorithms.Vertex, itemIDs []string) {
 	}
 
 	// go true every user in dataset
+	var resultFromUser []string
 	for key, vertex := range dataset {
-		var resultFromUser []string
 		total := strconv.Itoa(getFieldInteger(vertex, "totalRatings"))
 		cosine := getFieldFloat(vertex, "cosine")
 		if key == 0 {
 			firstItem := getFieldString(vertex, "firstItem")
-			resultFromUser = append(resultFromUser, firstItem, fmt.Sprintf("%.4f", cosine)+" ("+total+")")
-		} else {
-			resultFromUser = append(resultFromUser, fmt.Sprintf("%.4f", cosine)+" ("+total+")")
+			resultFromUser = append(resultFromUser, firstItem)
 		}
-
-		tableData = append(tableData, resultFromUser)
+		resultFromUser = append(resultFromUser, fmt.Sprintf("%.4f", cosine)+" ("+total+")")
 	}
+	tableData = append(tableData, resultFromUser)
 
+	fmt.Println("\n")
 	// create Ascii table
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader(tableHeaders) // set the headers for the table
@@ -117,4 +115,21 @@ func PrintVertexTable(dataset []algorithms.Vertex, itemIDs []string) {
 	table.AppendBulk(tableData) // Append the user data to the table
 	table.Render()
 	fmt.Println("einde")
+}
+
+func SortList(usersAverages map[string]float64) map[string]float64 {
+	// To store the keys in slice in sorted order
+	var keys []string
+	for k := range usersAverages {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	newList := map[string]float64{}
+	// To perform the operation you want
+	for _, k := range keys {
+		newList[k] = usersAverages[k]
+	}
+
+	return newList
 }
