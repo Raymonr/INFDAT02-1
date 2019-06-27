@@ -13,6 +13,12 @@ type NewUserItemDataSet struct {
 	AlgorithmName string
 }
 
+type ItemItemDataSet struct {
+	Dataset       map[string]map[string]float64
+	Averages      map[string]float64
+	AlgorithmName string
+}
+
 type Data struct {
 	EqualUserItemRatings  *map[string]map[string]float64
 	UniqueUserItemRatings *map[string]map[string]float64
@@ -112,6 +118,16 @@ func PrintsSimilarAndDifferentItems(data Data, description string) {
 func Contains(items map[string]float64, comparedItem map[string]float64) bool {
 	for i := range items {
 		if _, ok := comparedItem[i]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+// Contains tells if item contains the same item in the comparedItem list.
+func ContainsString(items []string, comparedItem string) bool {
+	for _, val := range items {
+		if val == comparedItem {
 			return true
 		}
 	}

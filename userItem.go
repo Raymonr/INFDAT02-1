@@ -118,7 +118,7 @@ func (pearson Pearson) Calculate(user map[string]float64, otherUser map[string]f
 		// Only calculate distance when the other user rated the same items
 		if otherUserRating, ok := otherUser[k]; ok {
 			// Distance multiplied by the power of two
-			A += algorithms.DistanceMultipliedBetweenXY(user[k], otherUserRating)
+			A += user[k] * otherUserRating
 			B1 += user[k]
 			B2 += otherUserRating
 
@@ -128,11 +128,12 @@ func (pearson Pearson) Calculate(user map[string]float64, otherUser map[string]f
 		}
 	}
 
-	upper := A - ((B1 * B2) / lengthItems)
+	B := (B1 * B2) / lengthItems
 	C2 = math.Pow(B1, 2) / lengthItems
+	C := math.Sqrt(C1 - C2)
 	D2 = math.Pow(B2, 2) / lengthItems
-	under := math.Sqrt(C1-C2) * math.Sqrt(D1-D2)
-	return upper / under
+	D := math.Sqrt(D1 - D2)
+	return (A - B) / (C * D)
 }
 
 // Cosine
