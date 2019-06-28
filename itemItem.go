@@ -153,18 +153,30 @@ func main() {
 			fmt.Println("User ratings", err)
 		}
 
-		// new userRatings needed to be normalized between -1 and 1
-		normalizedUserRatings, err := assets.NormalizeUserRatings(userRatings["6"])
-		if err != nil {
-			fmt.Println("Normalized ratings", err)
+		var normalizedUserRatings float64
+		userLowestRating, userHighestRating := assets.GetUserLowestAndHighestValue(userRatings["6"])
+
+		for k, v := range *cosine.similarities {
+			if k == "103" {
+				normalizedUserRatings, err = assets.NormalizeUserRatings(v, userRatings["6"], userLowestRating, userHighestRating)
+
+				if err != nil {
+					fmt.Println("Normalized ratings", err)
+				}
+			}
 		}
+
+		// create demoralized value
+		denormalizePredictedUserRating := assets.DenormalizeValue(normalizedUserRatings, userLowestRating, userHighestRating)
+
+		fmt.Println("\nNormalized user item similarity \n", normalizedUserRatings)
+		fmt.Println("Denormalized predicted rating for 103 \n", denormalizePredictedUserRating)
 		// the normalisation could be used to predict the rating for item 103
 
-		fmt.Println("uitkomst:", userRatings, normalizedUserRatings)
 		// Step 2 ACS
 		// predict ratings for user
 
-		//todo predict rating
+		//todo predict rating for user
 
 	}
 }

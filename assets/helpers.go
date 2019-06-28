@@ -3,6 +3,7 @@ package assets
 import (
 	"fmt"
 	"github.com/olekukonko/tablewriter"
+	"math"
 	"os"
 	"strconv"
 )
@@ -157,10 +158,49 @@ func CreateNewUser(Id string) (userRatings map[string]map[string]float64, err er
 }
 
 // Normalize ratings
-func NormalizeUserRatings(ratings map[string]float64) (normalizedRatings map[string]float64, err error) {
+func NormalizeUserRatings(averagesRatingBetweenItems map[string]map[float64]int, ratings map[string]float64, userLowestRating float64, userHighestRating float64) (normalizedRating float64, err error) {
+	upper := 0.0
+	lower := 0.0
+	simItems := 0.0
+
+	// go over every user rated item
 	for k, v := range ratings {
-		fmt.Println("hier", k, v)
+		// get similarity between items
+		for similarityBetweenItems, _ := range averagesRatingBetweenItems[k] {
+			simItems = similarityBetweenItems
+			break
+		}
+		upper += normaliseValue(v, userLowestRating, userHighestRating) * simItems
+		lower += math.Abs(simItems)
 	}
 
-	return nil, nil
+	// return the deviation between upper and lower to get the normalized value for the user.
+	return upper / lower, nil
+}
+
+// Normalise value from 0 - 5 to -1 and 1.
+func normaliseValue(value float64, userLowestRating float64, userHighestRating float64) float64 {
+	return 2*((value-userLowestRating)/(userHighestRating-userLowestRating)) - 1
+}
+
+// Create value between 0 - 5 from normalised value between -1 and 1
+func DenormalizeValue(normalisedValue float64, userLowestRating float64, userHighestRating float64) float64 {
+	return ((normalisedValue+1)/2)*(userHighestRating-userLowestRating) + 1
+}
+
+// Get the lowest and highest rated item from the user
+func GetUserLowestAndHighestValue(userRatings map[string]float64) (low float64, high float64) {
+	low = 5.0
+	high = 0.0
+
+	for _, v := range userRatings {
+		if v < low {
+			low = v
+		}
+		if v > high {
+			high = v
+		}
+	}
+
+	return low, high
 }
