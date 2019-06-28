@@ -133,7 +133,7 @@ func main() {
 	err := cosine.Average()
 
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("cosine Average", err.Error())
 	} else {
 		// print result off the user averages
 		assets.PrintItemItemAverages(*cosine.averages, "The average rating for all the users:")
@@ -142,11 +142,25 @@ func main() {
 		// calculate similarity between items
 		err := cosine.Similarity()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Cosine Similarity", err)
 		} else {
 			assets.PrintItemAlgorithmSimilarities(cosine.similarities, *cosine.itemsIDs, "Cosine adjustment formula:  similarity between all items")
 		}
 
+		userRatings, err := assets.CreateNewUser("6")
+
+		if err != nil {
+			fmt.Println("User ratings", err)
+		}
+
+		// new userRatings needed to be normalized between -1 and 1
+		normalizedUserRatings, err := assets.NormalizeUserRatings(userRatings["6"])
+		if err != nil {
+			fmt.Println("Normalized ratings", err)
+		}
+		// the normalisation could be used to predict the rating for item 103
+
+		fmt.Println("uitkomst:", userRatings, normalizedUserRatings)
 		// Step 2 ACS
 		// predict ratings for user
 

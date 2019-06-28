@@ -143,3 +143,24 @@ func Find(items []string, comparedItem string) bool {
 	}
 	return false
 }
+
+// Create new user for item prediction
+func CreateNewUser(Id string) (userRatings map[string]map[string]float64, err error) {
+	userRatings = make(map[string]map[string]float64)
+	userRatings[Id] = map[string]float64{}
+	userRatings[Id]["104"] = 3.0
+	userRatings[Id]["106"] = 5.0
+	userRatings[Id]["107"] = 4.0
+	userRatings[Id]["109"] = 1.0
+
+	return userRatings, nil
+}
+
+// Normalize ratings
+func NormalizeUserRatings(ratings map[string]float64) (normalizedRatings map[string]float64, err error) {
+	for k, v := range ratings {
+		fmt.Println("hier", k, v)
+	}
+
+	return nil, nil
+}
