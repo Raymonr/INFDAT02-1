@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// function to create hashmap with values
 func CreateUserItemRatingsTable() (userRatings map[string]map[string]float64, items []string) {
 	userRatings = make(map[string]map[string]float64)
 	userRatings["1"] = map[string]float64{}
@@ -25,6 +26,7 @@ func CreateUserItemRatingsTable() (userRatings map[string]map[string]float64, it
 	return userRatings, items
 }
 
+// the one slope function
 func OneSlope(userRatings map[string]map[string]float64, items []string) {
 	// create deviations for all the items users have rated
 	deviations := computeDeviations(userRatings, items)
@@ -33,7 +35,7 @@ func OneSlope(userRatings map[string]map[string]float64, items []string) {
 	for _, value := range userRatings {
 		for _, v := range items {
 			if _, ok := value[v]; ok {
-
+				continue
 			} else {
 				// when the value doesn't exist predict and add value to userRatings
 				predRating := prediction(value, deviations, v)
@@ -41,15 +43,17 @@ func OneSlope(userRatings map[string]map[string]float64, items []string) {
 			}
 		}
 	}
-	//todo denominator
-	fmt.Println("demo")
+	// predicted ratings results for all the users
+	fmt.Println("end result one slope", userRatings)
 }
 
+// struct to save the rated value and the amount the item has been rated
 type dev struct {
 	difference  float64
 	ratedAmount int
 }
 
+// one slope compute deviation function
 func computeDeviations(DevIJ map[string]map[string]float64, items []string) map[string]map[string]dev {
 	devTable := make(map[string]map[string]dev)
 
@@ -101,26 +105,20 @@ func computeDeviations(DevIJ map[string]map[string]float64, items []string) map[
 	return devTable
 }
 
-//predictions
+// one slope predictions function
 func prediction(userRatings map[string]float64, DevIJ map[string]map[string]dev, itemID string) float64 {
-
-	fmt.Println("dit", userRatings, DevIJ, itemID)
+	// result of the combination and how many times are the combinations of items rated (denominator)
 	result := 0.0
-	amountRated := 0
+	denominator := 0
+
+	//loop over list
 	for k, v := range userRatings {
 		ratedItem := DevIJ[k][itemID]
-		fmt.Println("val", (v+ratedItem.difference)*float64(ratedItem.ratedAmount))
 		result += (v + ratedItem.difference) * float64(ratedItem.ratedAmount)
-		amountRated += ratedItem.ratedAmount
+		denominator += ratedItem.ratedAmount
 	}
 
-	res := result / float64(amountRated)
-
-	fmt.Println("dem", res)
+	res := result / float64(denominator)
 
 	return res
 }
-
-//if _, ok := DevIJ[items[i]]; !ok {
-//fmt.Println("false", v, k)
-//}
