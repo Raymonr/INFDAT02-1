@@ -79,9 +79,6 @@ func (cosine CosineItem) Similarity(dataset map[string]map[string]float64, itemI
 	cosineAdjustedSimilarity = make(map[string]map[string]map[float64]int)
 	var loopedOver []string
 
-	//todo loop over every user,
-	// todo check if user has first itemID & secondItemID
-
 	for _, v := range itemIds {
 		if cosineAdjustedSimilarity[v] == nil {
 			cosineAdjustedSimilarity[v] = map[string]map[float64]int{}
@@ -125,8 +122,8 @@ func main() {
 	var itemDataset map[string]map[string]float64
 	var itemAverages map[string]float64
 	var cosineAlg CosineItem
-	//itemOne := 103
-	//itemTwo := 104
+	newUserID := "6"
+	findUnratedItem := "103"
 	// create ItemItem with different algorithms at runtime
 	cosine := itemItem{calculateSimilarity: cosineAlg, algorithmName: "Cosine distance\n similarity", itemsIDs: &itemIDS, dataset: &itemDataset, calculateAverage: cosineAlg, averages: &itemAverages}
 	// get averages of users from dataset
@@ -147,18 +144,20 @@ func main() {
 			assets.PrintItemAlgorithmSimilarities(cosine.similarities, *cosine.itemsIDs, "Cosine adjustment formula:  similarity between all items")
 		}
 
+		// create new user with item ratings
 		userRatings, err := assets.CreateNewUser("6")
 
 		if err != nil {
 			fmt.Println("User ratings", err)
 		}
 
+		// Get the lowest and highest rated item from the user and Normalise user ratings.
 		var normalizedUserRatings float64
-		userLowestRating, userHighestRating := assets.GetUserLowestAndHighestValue(userRatings["6"])
+		userLowestRating, userHighestRating := assets.GetUserLowestAndHighestValue(userRatings[newUserID])
 
 		for k, v := range *cosine.similarities {
-			if k == "103" {
-				normalizedUserRatings, err = assets.NormalizeUserRatings(v, userRatings["6"], userLowestRating, userHighestRating)
+			if k == findUnratedItem {
+				normalizedUserRatings, err = assets.NormalizeUserRatings(v, userRatings[newUserID], userLowestRating, userHighestRating)
 
 				if err != nil {
 					fmt.Println("Normalized ratings", err)
@@ -166,17 +165,19 @@ func main() {
 			}
 		}
 
-		// create demoralized value
+		// Denormalize value to suggest the predicted rating for the user
 		denormalizePredictedUserRating := assets.DenormalizeValue(normalizedUserRatings, userLowestRating, userHighestRating)
 
 		fmt.Println("\nNormalized user item similarity \n", normalizedUserRatings)
 		fmt.Println("Denormalized predicted rating for 103 \n", denormalizePredictedUserRating)
+		fmt.Println("\n\n\nOneslope\n")
 		// the normalisation could be used to predict the rating for item 103
 
-		// Step 2 ACS
-		// predict ratings for user
+		// Step 2 ONE SLOPE
+		// getUserRatings
+		oneSlopeUserRatings, oneSlopeItems := assets.CreateUserItemRatingsTable()
 
-		//todo predict rating for user
-
+		// compute oneSlope
+		assets.OneSlope(oneSlopeUserRatings, oneSlopeItems)
 	}
 }
