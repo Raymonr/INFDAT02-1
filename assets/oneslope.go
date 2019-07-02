@@ -26,11 +26,10 @@ func CreateUserItemRatingsTable() (userRatings map[string]map[string]float64, it
 }
 
 func OneSlope(userRatings map[string]map[string]float64, items []string) {
-	//todo Compute deviations between all pairs of items
+	// create deviations for all the items users have rated
 	deviations := computeDeviations(userRatings, items)
-	fmt.Println("test", deviations)
 
-	//todo Make predictions combining deviations and ratings
+	// loop over every user and check if there aren't empty ratings to predict them.
 	for _, value := range userRatings {
 		for _, v := range items {
 			if _, ok := value[v]; ok {
