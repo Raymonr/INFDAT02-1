@@ -24,8 +24,8 @@ type itemItem struct {
 type CosineItem struct {
 }
 
+// Executes the distance interface between the same items and adds similarity to see the difference in total ratings
 func (cosine CosineItem) Average(user map[string]float64) (distance float64) {
-	// Executes the distance between the same items and adds similarity to see the difference in total ratings
 	integer := 0.0
 	sum := 0.0
 	for _, value := range user {
@@ -36,6 +36,7 @@ func (cosine CosineItem) Average(user map[string]float64) (distance float64) {
 	return sum / integer
 }
 
+// StrategyPattern to set the values for average and pass it on to the right pattern
 func (uI *itemItem) Average() error {
 	tempDataset, err := assets.ReadDataset("files/item-item.txt")
 	//tempDataset, err := assets.ReadMovieDataSet("files/movieLens100KUserItems.data")
@@ -75,6 +76,7 @@ func (uI *itemItem) Average() error {
 	return nil
 }
 
+// Calculate the cosine Similarity
 func (cosine CosineItem) Similarity(dataset map[string]map[string]float64, itemIds []string, userAverages map[string]float64) (cosineAdjustedSimilarity map[string]map[string]map[float64]int, err error) {
 	cosineAdjustedSimilarity = make(map[string]map[string]map[float64]int)
 	var loopedOver []string
@@ -104,7 +106,7 @@ func (cosine CosineItem) Similarity(dataset map[string]map[string]float64, itemI
 	return cas, nil
 }
 
-// Execute interface executed for every method in StrategyPattern
+// Execute the similarity interface executed for every method in StrategyPattern
 func (uI *itemItem) Similarity() error {
 	strategyCalculatedSimilarity, err := uI.calculateSimilarity.Similarity(*uI.dataset, *uI.itemsIDs, *uI.averages)
 	if err != nil {
