@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// function to check if value exist.
 func ItemContains(strArray []string, find string) bool {
 	if len(strArray) == 0 {
 		return true
@@ -24,6 +25,7 @@ func ItemContains(strArray []string, find string) bool {
 	return true
 }
 
+// function to print interface averages
 func PrintItemItemAverages(allAlgorithms map[string]float64, description string) {
 	// variables
 	var tableData [][]string
@@ -47,6 +49,7 @@ func PrintItemItemAverages(allAlgorithms map[string]float64, description string)
 	table.Render()
 }
 
+// function to print interface similarities
 func PrintItemAlgorithmSimilarities(cosineAdjustedSimilarity *map[string]map[string]map[float64]int, itemIDs []string, description string) {
 	var tableData [][]string
 	tableHeaders := []string{"Items"}
@@ -89,49 +92,6 @@ func PrintItemAlgorithmSimilarities(cosineAdjustedSimilarity *map[string]map[str
 		}
 		// add the array of strings tot the row.
 		tableData = append(tableData, temp)
-	}
-
-	// print the description
-	fmt.Println("\n" + description)
-	// create Ascii table
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(tableHeaders) // set the headers for the table
-	table.SetBorder(true)
-	table.AppendBulk(tableData) // Append the user data to the table
-	table.Render()
-}
-
-func PrintItemTable(dataset *map[string]map[string]float64, average *map[string]float64, itemIDs []string, description string) {
-	// variables
-	var tableData [][]string
-	tableHeaders := []string{"Users", "Avarage"}
-
-	// add itemID's to header
-	for i := 0; i < len(itemIDs); i++ {
-		tableHeaders = append(tableHeaders, itemIDs[i])
-	}
-
-	// go true every user in dataset
-	for key, value := range *dataset {
-		var resultFromUser []string
-		resultFromUser = append(resultFromUser, key)
-
-		// needed to add average off user
-		for key2, value2 := range *average {
-			if key == key2 {
-				resultFromUser = append(resultFromUser, fmt.Sprintf("%.2f", value2))
-			}
-		}
-		for i := 0; i < len(itemIDs); i++ {
-			temp := itemIDs[i]
-			if val, ok := value[temp]; ok {
-				resultFromUser = append(resultFromUser, fmt.Sprintf("%.2f", val))
-			} else {
-				resultFromUser = append(resultFromUser, "-")
-			}
-		}
-
-		tableData = append(tableData, resultFromUser)
 	}
 
 	// print the description
@@ -195,6 +155,7 @@ func PrintVertexTable(dataset []algorithms.Vertex, itemIDs []string) {
 	fmt.Println("einde")
 }
 
+// function which orders the map from low to high id's
 func SortList(usersAverages map[string]float64) map[string]float64 {
 	// To store the keys in slice in sorted order
 	var keys []string
@@ -212,6 +173,7 @@ func SortList(usersAverages map[string]float64) map[string]float64 {
 	return newList
 }
 
+// function to calculate adjusted cosine.
 func ACS(adjustedCosineTable map[string]map[string]map[float64]int, dataset map[string]map[string]float64, itemIds []string, userAverages map[string]float64) (act map[string]map[string]map[float64]int, err error) {
 	// loop over all possible items
 	for k, v := range adjustedCosineTable {
@@ -256,4 +218,80 @@ func ACS(adjustedCosineTable map[string]map[string]map[float64]int, dataset map[
 		}
 	}
 	return adjustedCosineTable, nil
+}
+
+// function to print one slope deviations
+func printDeviationsOneSlope(deviations map[string]map[string]dev, items []string) {
+	fmt.Println("dev", deviations)
+
+	// variables
+	var tableData [][]string
+	var temp []string
+	tableHeaders := []string{"items"}
+
+	for _, val := range items {
+		tableHeaders = append(tableHeaders, val)
+
+		temp = append(temp, val)
+
+		for _, v := range items {
+			// if item exist
+
+			if _, ok := deviations[val][v]; ok {
+				test := fmt.Sprintf("%.2f", deviations[val][v].difference) + " (" + strconv.Itoa(deviations[val][v].ratedAmount) + ")"
+				temp = append(temp, test)
+			} else {
+				temp = append(temp, "")
+			}
+
+		}
+		tableData = append(tableData, temp)
+	}
+
+	// add itemID's to header
+	//for k, v := range deviations {
+	//	tableHeaders = append(tableHeaders, k)
+	//	var temp []string
+	//
+	//	// loop over all values in items
+	//	for _, val := range items{
+	//		first := true
+	//		// if item exist
+	//		if first {
+	//			temp = append(temp, k)
+	//			first = false
+	//		}
+	//
+	//		if _, ok := v[val]; ok {
+	//			test := fmt.Sprintf("%.2f", v[val].difference) + " (" + strconv.Itoa(v[val].ratedAmount) + ")"
+	//			temp = append(temp, test)
+	//		}else {
+	//			temp = append(temp, "")
+	//		}
+	//	}
+
+	//for key, val := range v {
+	//		test := fmt.Sprintf("%.2f", val.difference) + " (" + strconv.Itoa(val.ratedAmount) + ")"
+	//		var temp []string
+	//		temp = append(temp, key)
+	//		temp = append(temp, test)
+	//		tableData = append(tableData, temp)
+	//}
+	//tableData = append(tableData, temp)
+	//fmt.Println("deze", k , v)
+
+	//for key, value := range allAlgorithms {
+	//	test := fmt.Sprintf("%.2f", value)
+	//	var temp []string
+	//	temp = append(temp, key)
+	//	temp = append(temp, test)
+	//	tableData = append(tableData, temp)
+	//}
+
+	// create Ascii table
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(tableHeaders) // set the headers for the table
+	table.SetBorder(true)
+	table.AppendBulk(tableData) // Append the user data to the table
+	table.Render()
 }

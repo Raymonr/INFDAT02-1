@@ -4,7 +4,13 @@ import (
 	"fmt"
 )
 
-// function to create hashmap with values
+// struct to save the rated value and the amount the item has been rated
+type dev struct {
+	difference  float64
+	ratedAmount int
+}
+
+// function to create hash map with values
 func CreateUserItemRatingsTable() (userRatings map[string]map[string]float64, items []string) {
 	userRatings = make(map[string]map[string]float64)
 	userRatings["1"] = map[string]float64{}
@@ -30,6 +36,7 @@ func CreateUserItemRatingsTable() (userRatings map[string]map[string]float64, it
 func OneSlope(userRatings map[string]map[string]float64, items []string) {
 	// create deviations for all the items users have rated
 	deviations := computeDeviations(userRatings, items)
+	//printDeviationsOneSlope(deviations, items)
 
 	// loop over every user and check if there aren't empty ratings to predict them.
 	for _, value := range userRatings {
@@ -45,12 +52,6 @@ func OneSlope(userRatings map[string]map[string]float64, items []string) {
 	}
 	// predicted ratings results for all the users
 	fmt.Println("end result one slope", userRatings)
-}
-
-// struct to save the rated value and the amount the item has been rated
-type dev struct {
-	difference  float64
-	ratedAmount int
 }
 
 // one slope compute deviation function
